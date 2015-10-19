@@ -198,6 +198,16 @@ def facility_sms_reports(facility_id, report):
                 msgs.append(m["text"] % report)
     return msgs
 
+
+def get_recipients(cur, fuuid):
+    """used to get reporters attached to facility with uuid = fuuid in mTrac"""
+    cur.execute(
+        "SELECT facility_reporters('%s') AS recipients;" % fuuid)
+    r = cur2.fetchone()
+    if r:
+        return r["recipients"]
+    return ""
+
 # BASE_URL will actuall point to the pivot table download we need
 BASE_URL = CONFIG['base_url']
 BASE_URL = BASE_URL + "dimension=pe:%s&" % generate_period_string()
@@ -374,6 +384,7 @@ for r in res:
                     params = {
                         'fuuid': facility_uuid,
                         'text': m,
+                        'sender': get_recipients(cur2, facility_uuid),  # add recipients
                         'username': CONFIG['smsuser'],
                         'password': CONFIG['smspasswd'],
                         'district': r["name"],
@@ -381,6 +392,7 @@ for r in res:
                     sched_time = current_time + datetime.timedelta(minutes=SMS_OFFSET_TIME)
                     if SENDSMS:
                         queue_facility_sms(conn, cur, params, sched_time)
+                        report["recipients"] = params['sender']
                     current_time = sched_time
                     # send_facility_sms(params)
             # save report whether treatment or control
@@ -391,3 +403,4 @@ for r in res:
 
 # END District Code
 conn.close()
+conn2.close()
