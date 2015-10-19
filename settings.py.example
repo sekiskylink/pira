@@ -114,8 +114,8 @@ MONTHLY_MESSAGES = [
         'has_params': True,
         'has_variations': True,
         'text': (
-            "Your performance %(total_score).0f%% since last year. ANC1 visits %(comp_anc1).0f%%, "
-            "ANC4 visits %(comp_anc4).0f%%, deliveries %(comp_delivery).0f%%, and PCV3 %(comp_pcv).0f%%")
+            "Your performance %(total_score)+.0f%% since last year. ANC1 visits %(comp_anc1)+.0f%%, "
+            "ANC4 visits %(comp_anc4)+.0f%%, deliveries %(comp_delivery)+.0f%%, and PCV3 %(comp_pcv)+.0f%%")
     },
     {
         'has_params': True,
