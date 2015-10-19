@@ -1,0 +1,127 @@
+SMS_OFFSET_TIME = 1
+CONFIG = {
+    # DHIS2 Confs
+    'dhis2_user': 'x',
+    'dhis2_passwd': 'xxxx',
+    'base_url': 'http://hmis2.health.go.ug/api/analytics.csv?',
+    'orgunits_url': 'http://hmis2.health.go.ug/api/organisationUnits',
+    # DB Confs
+    'dbname': 'pira',
+    'mtrack_dbname': 'mtrack',
+    'dbuser': 'x',
+    'dbpasswd': 'xxxx',
+    'dbhost': 'localhost',
+    'dbport': '5432',
+    # SMS Confs
+    'smsuser': 'x',
+    'smspasswd': 'xxxx',
+    # 'smsurl': 'http://cvs.rapidsms.org:9090/facilitysms',
+    'smsurl': 'http://localhost:9090/facilitysms',
+    # PIR Confs
+}
+
+TREATMENT_MESSAGES = [
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': (
+            "The MoH is proud to present a new eHMIS feature to"
+            " help your facility monitor performance. You'll receive monthly SMS reports "
+            "about 4 indicators from HMIS105")
+    },
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': (
+            "These SMS updates will compare your performance over the past 3 months to "
+            "your performance at the same time last year. The same reports go to the DHO")
+    },
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': (
+            "AVG THREE MONTH REPORT is the average number of each indicator for the last "
+            "three months. Indicators are ANC1, ANC4, DELIVERIES and PCV3")
+    },
+    {
+        'has_params': True,
+        'has_variations': False,
+        'text': (
+            "Your facility had %(curr_anc1).0f ANC1 visits, %(curr_anc4).0f ANC4 visits, "
+            "%(curr_delivery).0f deliveries, and %(curr_pcv).0f PCV3 per month on average the past 3 months."
+            " You reported %(curr_rr).0f%% of this data to HMIS105")
+    },
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': "If you don't report, your score is zero for that month."
+    },
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': (
+            "CHANGE FROM LAST YEAR is the AVG THREE MONTH REPORT from this year compared "
+            "to the same time last year, including overall change")
+    },
+    {
+        'has_params': True,
+        'has_variations': True,
+        'text': (
+            "Your performance %(total_score)+.0f%% since last year. ANC1 visits "
+            "%(comp_anc1)+.0f%%, ANC4 visits %(comp_anc4)+.0f%%, deliveries "
+            "%(comp_delivery)+.0f%% and PCV3 %(comp_pcv)+.0f%%")
+    },
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': (
+            "RANK is your CHANGE from last year compared to other HCII facilities in your district."
+            " The biggest improvements from last year rank highest.")
+    },
+    {
+        'has_params': True,
+        'has_variations': False,
+        'text': (
+            "Your facility ranks %(rank)s in the district among all %(level)ss."
+            " Perform your best, and report accurately")
+    },
+]
+
+# for control facilities in treatment districts
+CONTROL_MESSAGES = [
+    (
+        "The MoH is proud to present a new eHMIS feature. The DHO will now get a "
+        "detailed monthly report to monitor your facility's performance."),
+    ("Perform your best, and report accurately.")
+]
+
+# Monthly messages for treatment facilities in both treatment and control districts
+MONTHLY_MESSAGES = [
+    {
+        'has_params': False,
+        'has_variations': False,
+        'text': "Here is your facility's monthly SMS performance indicator report"
+    },
+    {
+        'has_params': True,
+        'has_variations': False,
+        'text': (
+            "Your facility had %(curr_anc1).0f ANC1 visits, %(curr_anc4).0f ANC4 visits, "
+            "%(curr_delivery).0f deliveries, and %(curr_pcv).0f PCV3 per month on average "
+            "the past 3 months. You reported %(curr_rr).0f of this data to HMIS105")
+    },
+    {
+        'has_params': True,
+        'has_variations': True,
+        'text': (
+            "Your performance %(total_score).0f%% since last year. ANC1 visits %(comp_anc1).0f%%, "
+            "ANC4 visits %(comp_anc4).0f%%, deliveries %(comp_delivery).0f%%, and PCV3 %(comp_pcv).0f%%")
+    },
+    {
+        'has_params': True,
+        'has_variations': False,
+        'text': (
+            "Your facility ranks %(rank)s of %(facility_count)s %(level)ss in the district. "
+            "Perform your best, and report accurately.")
+    }
+]
