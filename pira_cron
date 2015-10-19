@@ -1,0 +1,5 @@
+# run this every second thursay of the month at 10:00 AM
+0 10 * *  thur [ `date +%d` -eq `cal | awk '{print $5}' |head -n4 |tail -n 1` ] &&
+    /var/www/env/dev/bin/python /var/www/prod/pira/pira.py
+# check every minute for schedules ready to be sent out 
+* * * * * /var/www/prod/pira/send_scheduled.py
