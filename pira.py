@@ -316,9 +316,9 @@ for r in res:
         stats_dict[facility_id]['facility_count'] = '0'
         # print facility_level
         if facility_level:
-            if facility_level == 'HC II':
+            if facility_level == 'HCII':
                 hcii_scores[facility_id] = (float(total_score) / 4)
-            elif facility_level == 'HC III':
+            elif facility_level == 'HCIII':
                 hciii_scores[facility_id] = (float(total_score) / 4)
 
     try:  # just in case we have no facilities eligible
