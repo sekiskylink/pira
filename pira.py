@@ -313,7 +313,7 @@ for r in res:
         facility_level = get_facility_level(cur, facility_id)
         stats_dict[facility_id]['rank'] = ''
         stats_dict[facility_id]['level'] = facility_level
-        stats_dict[facility_id]['facility_count'] = 0
+        stats_dict[facility_id]['facility_count'] = '0'
         # print facility_level
         if facility_level:
             if facility_level == 'HC II':
@@ -330,7 +330,7 @@ for r in res:
         for idx, v in enumerate(sorted_hcii.values):  # for HC II
             position = idx + 1
             stats_dict[v[0]]['rank'] = ordinal(position)  # v[0] = facility_id
-            stats_dict[v[0]]['facility_count'] = fcount
+            stats_dict[v[0]]['facility_count'] = '%.0f' % fcount
     except:
         pass
 
@@ -345,7 +345,7 @@ for r in res:
         for idx, v in enumerate(sorted_hciii.values):  # for HC III
             position = idx + 1
             stats_dict[v[0]]['rank'] = ordinal(position)  # v[0] = facility_id
-            stats_dict[v[0]]['facility_count'] = fcount
+            stats_dict[v[0]]['facility_count'] = '%.0f' % fcount
     except:
         pass
 
