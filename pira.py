@@ -314,7 +314,7 @@ for r in res:
         stats_dict[facility_id]['total_score'] = ("%.2f" % (float(total_score) / 4))
         facility_level = get_facility_level(cur, facility_id)
         stats_dict[facility_id]['rank'] = ''
-        stats_dict[facility_id]['level'] = facility_level.replace(" ", "")
+        stats_dict[facility_id]['level'] = facility_level.replace(" ", "") if facility_level else ""
         stats_dict[facility_id]['facility_count'] = '0'
         # print facility_level
         if facility_level:
