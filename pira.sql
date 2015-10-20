@@ -39,6 +39,32 @@ CREATE TABLE schedules(
     cdate TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Add some views
+
+--alter sequence schedules_id_seq restart with 1;
+DROP VIEW IF EXISTS schedule_sms_view;
+CREATE VIEW schedule_sms_view AS
+    SELECT
+
+        params->>'text' as text,
+        array_length(regexp_split_to_array(params->>'sender', ','), 1) as sms_count,
+        to_char(run_time, 'yyyy-mm-dd HH:MI') as run_time,
+        status,
+        params->>'fuuid' as fuuid
+    FROM
+        schedules
+    WHERE
+        length(params->>'sender') > 0;
+
+DROP VIEW IF EXISTS facilities_without_reporters;
+CREATE VIEW facilities_without_reporters AS
+    SELECT
+        district, name, dhis2id, level, is_treatment_facility, is_treatment_district
+    FROM
+        facilities_view
+    WHERE
+        uuid IN  (SELECT DISTINCT params->>'fuuid' FROM schedules WHERE length(params->>'sender') = 0);
+
 --\copy districts(name, dhis2id) FROM '~/projects/unicef/interapp/districts.csv' WITH DELIMITER ',' CSV HEADER;
 --
 --UPDATE districts SET eligible = 'f' WHERE name IN
