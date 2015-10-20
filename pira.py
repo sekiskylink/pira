@@ -167,6 +167,8 @@ def queue_facility_sms(conn, cur, params, run_time):  # params has the facility 
 
 def float_values(m):
     for k, v in m.iteritems():
+        if k in ('level', 'facility_count', 'rank'):
+            continue
         try:
             m[k] = float(v)
         except:
@@ -312,13 +314,13 @@ for r in res:
         stats_dict[facility_id]['total_score'] = ("%.2f" % (float(total_score) / 4))
         facility_level = get_facility_level(cur, facility_id)
         stats_dict[facility_id]['rank'] = ''
-        stats_dict[facility_id]['level'] = facility_level
+        stats_dict[facility_id]['level'] = facility_level.replace(" ", "")
         stats_dict[facility_id]['facility_count'] = '0'
         # print facility_level
         if facility_level:
-            if facility_level == 'HCII':
+            if facility_level == 'HC II':
                 hcii_scores[facility_id] = (float(total_score) / 4)
-            elif facility_level == 'HCIII':
+            elif facility_level == 'HC III':
                 hciii_scores[facility_id] = (float(total_score) / 4)
 
     try:  # just in case we have no facilities eligible
