@@ -3,7 +3,17 @@ import psycopg2
 import psycopg2.extras
 import json
 import requests
+import logging
 from settings import CONFIG
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(process)d] %(levelname)-4s:  %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    # filename='/var/log/mtsms/mtsms.log',
+    filename='/var/log/pira/pira_sched.log',
+    filemode='a'
+)
 
 # To handle Json in DB well
 psycopg2.extras.register_default_json(loads=lambda x: x)
@@ -29,11 +39,18 @@ cur.execute(
     " = to_char(now(), 'yyyy-mm-dd HH:MI') "
     " AND status = 'ready' FOR UPDATE NOWAIT")
 res = cur.fetchall()
+sched_len = len(res)
+logging.info("Scheduler got %s SMS to send out" % sched_len)
 for r in res:
     # cur.execute("SELECT id FROM schedules WHERE id = %s FOR UPDATE NOWAIT", [r["id"]])
     params = json.loads(r["params"])
-    response = send_facility_sms(params)
-    status = 'completed' if response == 'Accepted' else 'failed'
-    cur.execute("UPDATE schedules SET status = %s WHERE id = %s", [status, r["id"]])
-    conn.commit()
+    try:
+        response = send_facility_sms(params)
+        status = 'completed' if response == 'Accepted' else 'failed'
+        cur.execute("UPDATE schedules SET status = %s WHERE id = %s", [status, r["id"]])
+        conn.commit()
+        logging.info(
+            "Scheduler run: [schedid:%s] [status:%s] [msg:%s]" % (r["id"], status, params["text"]))
+    except Exception as e:
+        logging.error("Scheduler Failed on [schedid:%s], [reason:%s]" % (r["id"], str(e)))
 conn.close()
