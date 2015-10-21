@@ -70,3 +70,9 @@ CREATE VIEW facilities_without_reporters AS
 --UPDATE districts SET eligible = 'f' WHERE name IN
 --    ('Bukedea', 'Manafwa', 'Lira', 'Pader', 'Tororo', 'Gulu', 'Lamwo', 'Kitgum', 'Agago',
 --        'Apac', 'Kabarole', 'Bundibugyo', 'Kibaale', 'Nakaseke', 'Mubende', 'Katakwi');
+
+-- Add some handy commands
+-- show facilities without reporter
+-- copy (select * from facilities_without_reporters) to '/tmp/facilities_without_reporters.csv' with delimiter ',' csv header;
+-- count SMS sent out
+-- select sum(sms_count) from schedule_sms_view;
