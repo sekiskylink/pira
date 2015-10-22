@@ -40,7 +40,8 @@ cur.execute(
     " AND status = 'ready' FOR UPDATE NOWAIT")
 res = cur.fetchall()
 sched_len = len(res)
-logging.info("Scheduler got %s SMS to send out" % sched_len)
+if sched_len:
+    logging.info("Scheduler got %s SMS to send out" % sched_len)
 for r in res:
     # cur.execute("SELECT id FROM schedules WHERE id = %s FOR UPDATE NOWAIT", [r["id"]])
     params = json.loads(r["params"])
