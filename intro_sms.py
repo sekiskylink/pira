@@ -3,6 +3,9 @@ import psycopg2.extras
 import json
 import requests
 import re
+import sys
+# XXX
+sys.exit()
 
 from settings import CONFIG, TREATMENT_MESSAGES, CONTROL_MESSAGES, SMS_OFFSET_TIME
 from datetime import datetime, timedelta
@@ -80,10 +83,11 @@ if __name__ == '__main__':
         " user=" + CONFIG["dbuser"] + " password=" + CONFIG["dbpasswd"])
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     # Treatment facilities in Treatment/Control districts
-    cur.execute(
-        "SELECT uuid, is_treatment_district, facility_values::text FROM facilities_view "
-        "WHERE is_treatment_facility = 't'")
-    # cur.execute("SELECT uuid, is_treatment_district, facility_values::text FROM facilities_view WHERE dhis2id='H6KWp7l4pOe'")
+    # cur.execute(
+    #     "SELECT uuid, is_treatment_district, facility_values::text FROM facilities_view "
+    #     "WHERE is_treatment_facility = 't'")
+    # cur.execute("SELECT uuid, is_treatment_district, facility_values::text FROM facilities_view WHERE dhis2id='E1TxjBqAvWB'")
+    cur.execute("SELECT uuid, is_treatment_district, facility_values::text FROM facilities_view WHERE dhis2id='H6KWp7l4pOe'")
     res = cur.fetchall()
     print "Total T_T and T_C =>", len(res)
     for r in res:
@@ -120,7 +124,7 @@ if __name__ == '__main__':
     # Control facilities in treatment districts
     cur.execute(
         "SELECT uuid, facility_values::text FROM facilities_view WHERE is_treatment_facility = 'f' AND "
-        "is_treatment_district = 't'")
+        "is_treatment_district = 't' LIMIT 1")
     res = cur.fetchall()
     print "Total C_T => ", len(res)
     messages = CONTROL_MESSAGES
