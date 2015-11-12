@@ -18,8 +18,8 @@ SENDSMS = True
 
 cmd = sys.argv[1:]
 opts, args = getopt.getopt(
-    cmd, 'tid:',
-    ['testing', 'intro', 'district'])
+    cmd, 'tind:',
+    ['testing', 'intro', 'nosms', 'district'])
 
 for option, parameter in opts:
     if option in ('-t', '--testing'):
