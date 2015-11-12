@@ -9,6 +9,14 @@ CREATE TABLE districts(
     cdate TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE district_contacts(
+    id SERIAL PRIMARY KEY NOT NULL,
+    district_id INTEGER REFERENCES districts NOT NULL,
+    phonenumber TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT '' UNIQUE,
+    cdate TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE facilities(
     id SERIAL PRIMARY KEY NOT NULL,
     name TEXT NOT NULL DEFAULT '',
@@ -45,7 +53,7 @@ CREATE TABLE schedules(
 DROP VIEW IF EXISTS schedule_sms_view;
 CREATE VIEW schedule_sms_view AS
     SELECT
-
+        id,
         params->>'text' as text,
         array_length(regexp_split_to_array(params->>'sender', ','), 1) as sms_count,
         to_char(run_time, 'yyyy-mm-dd HH:MI') as run_time,
@@ -64,6 +72,60 @@ CREATE VIEW facilities_without_reporters AS
         facilities_view
     WHERE
         uuid IN  (SELECT DISTINCT params->>'fuuid' FROM schedules WHERE length(params->>'sender') = 0);
+
+CREATE OR REPLACE FUNCTION get_monthly_reports(month text)
+RETURNS TABLE(
+    facility text, flevel text, fdistrict text, treatment_facility boolean,
+    treatment_district boolean, curr_anc1 text, curr_anc4 text, curr_delivery text,
+    curr_pcv text, curr_rr text, comp_anc1 text, comp_anc4 text, comp_delivery text,
+    comp_pcv text, comp_rr text, rank text, pos int, total_score text)
+AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT
+        name,
+        level,
+        district,
+        is_treatment_facility,
+        is_treatment_district,
+        round((facility_values->month->>'curr_anc1')::numeric)::text,
+        round((facility_values->month->>'curr_anc4')::numeric)::text,
+        round((facility_values->month->>'curr_delivery')::numeric)::text,
+        round((facility_values->month->>'curr_pcv')::numeric)::text,
+        round((facility_values->month->>'curr_rr')::numeric)::text,
+        round((facility_values->month->>'comp_anc1')::numeric)::text,
+        round((facility_values->month->>'comp_anc4')::numeric)::text,
+        round((facility_values->month->>'comp_delivery')::numeric)::text,
+        round((facility_values->month->>'comp_pcv')::numeric)::text,
+        round((facility_values->month->>'comp_rr')::numeric)::text,
+        facility_values->month->>'rank'::text,
+        regexp_replace(facility_values->month->>'rank'::text, '[a-z]', '', 'g')::int as position,
+        round((facility_values->month->>'total_score')::numeric)::text
+    FROM
+        facilities_view
+    ORDER BY district, level, position;
+END;
+$$ language plpgsql;
+
+-- Add this to mTrac DB
+CREATE OR REPLACE FUNCTION public.get_dhts(xdistrict text)
+ RETURNS text
+ LANGUAGE plpgsql
+AS $function$
+    DECLARE
+    r TEXT;
+    p TEXT;
+    BEGIN
+        r := '';
+        FOR p IN SELECT split_part(default_connection, ',', 1) FROM reporters
+        WHERE facility_id = (SELECT id FROM facilities WHERE name = xdistrict)
+        AND length(default_connection) > 1 AND groups LIKE '%DH%' LOOP
+            r := r || p || ',';
+        END LOOP;
+        RETURN rtrim(r,',');
+    END;
+$function$
 
 --\copy districts(name, dhis2id) FROM '~/projects/unicef/interapp/districts.csv' WITH DELIMITER ',' CSV HEADER;
 --
