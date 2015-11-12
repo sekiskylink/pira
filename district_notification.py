@@ -12,18 +12,21 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 TEST_MODE = False
+TEST_DISTRICT = 'Amudat'
 INTRO_MODE = False
 
 cmd = sys.argv[1:]
 opts, args = getopt.getopt(
-    cmd, 'ti',
-    ['testing', 'intro'])
+    cmd, 'tid:',
+    ['testing', 'intro', 'district'])
 
 for option, parameter in opts:
     if option in ('-t', '--testing'):
         TEST_MODE = True
     if option in ('-i', '--intro'):
         INTRO_MODE = True
+    if option in ('-d', '--district'):
+        TEST_DISTRICT = parameter
 
 import logging
 logging.basicConfig()
@@ -120,15 +123,19 @@ if __name__ == '__main__':
         "dbname=" + CONFIG["dbname"] + " host= " + CONFIG["dbhost"] + " port=" + CONFIG["dbport"] +
         " user=" + CONFIG["dbuser"] + " password=" + CONFIG["dbpasswd"])
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute("SELECT id, name FROM districts WHERE is_treatment ='t' and name = 'Amudat'")
+    if TEST_MODE:
+        cur.execute(
+            "SELECT id, name FROM districts WHERE is_treatment ='t' and name = %s", [TEST_DISTRICT])
+    else:
+        cur.execute("SELECT id, name FROM districts WHERE is_treatment ='t'")
     res = cur.fetchall()
 
     for r in res:
         cur.execute(
             "SELECT rank, facility, flevel, curr_anc1, curr_anc4, curr_delivery, curr_pcv, curr_rr, total_score, "
             "comp_anc1, comp_anc4, comp_delivery, comp_pcv"
-            " FROM get_monthly_reports('2015-10')"
-            "WHERE fdistrict = %s", [r["name"]])
+            " FROM get_monthly_reports(%s)"
+            "WHERE fdistrict = %s", [reporting_period, r["name"]])
         data = cur.fetchall()
         if not data:
             continue
@@ -151,9 +158,15 @@ if __name__ == '__main__':
                 "<td align='right'>%s</td><td align='right'>%s</td><td align='right'>%s</td>"
                 "</tr>" % tuple(d))
 
-        email_recipients = get_district_emails(cur, r["name"])
-        # print body
-        # print email_Str % ({'district': r["name"], 'body': body})
+        if TEST_MODE:
+            email_recipients = CONFIG['email_test_recipients']
+        else:
+            email_recipients = get_district_emails(cur, r["name"])
+
+        email_Str = email_Str % ({'district': r["name"], 'body': body})
+        if INTRO_MODE:
+            email_Str = DISTRICT_INTRO % email_Str
+
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Monthly Performance Indicator Report"
         msg['From'] = CONFIG["email_sender"]
@@ -164,9 +177,17 @@ if __name__ == '__main__':
 
         msg.attach(part1)
         msg.attach(part2)
-        s = smtplib.SMTP('localhost')
-        s.sendmail(CONFIG["email_sender"], email_recipients, msg.as_string())
-        s.quit()
+        try:
+            smtpserver = smtplib.SMTP("smtp.gmail.com")
+            smtpserver.set_debuglevel(True)
+            smtpserver.ehlo()
+            smtpserver.starttls()
+            smtpserver.ehlo()
+            smtpserver.login(CONFIG["email_sender"], CONFIG["email_pass"])
+            smtpserver.sendmail(CONFIG["email_sender"], ', '.join(email_recipients), msg.as_string())
+            smtpserver.quit()
+        except smtplib.SMTPAuthenticationError as e:
+            print "Unable to send message: %s" % e
 
         # now build the SMS
         messages = [DISTRICT_FIRST_MSG]
