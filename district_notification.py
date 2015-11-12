@@ -15,11 +15,12 @@ TEST_MODE = False
 TEST_DISTRICT = 'Amudat'
 INTRO_MODE = False
 SENDSMS = True
+SENDEMAIL = True
 
 cmd = sys.argv[1:]
 opts, args = getopt.getopt(
-    cmd, 'tind:',
-    ['testing', 'intro', 'nosms', 'district'])
+    cmd, 'tinxd:',
+    ['testing', 'intro', 'nosms', 'noemial', 'district'])
 
 for option, parameter in opts:
     if option in ('-t', '--testing'):
@@ -30,6 +31,8 @@ for option, parameter in opts:
         TEST_DISTRICT = parameter
     if option in ('-n', '--nosms'):
         SENDSMS = False
+    if option in ('-x', '--noemail'):
+        SENDEMAIL = False
 
 import logging
 logging.basicConfig()
@@ -95,7 +98,7 @@ if __name__ == '__main__':
     email_Str = """
 <table>
     <thead>
-        <tr><th colspan="13" align="center">%(district)s Perfomance of Individual Facilities</th></tr>
+        <tr><th colspan="13" align="center">%(district)s Monthly Report: Perfomance of Individual Facilities</th></tr>
         <tr>
             <th>Position</th>
             <th align='left'>Facility</th>
@@ -170,27 +173,28 @@ if __name__ == '__main__':
         if INTRO_MODE:
             email_Str = DISTRICT_INTRO % email_Str
 
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Monthly Performance Indicator Report"
-        msg['From'] = CONFIG["email_sender"]
-        msg['To'] = ','.join(email_recipients)
+        if SENDEMAIL:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = "Monthly Performance Indicator Report"
+            msg['From'] = CONFIG["email_sender"]
+            msg['To'] = ','.join(email_recipients)
 
-        part1 = MIMEText(DISTRICT_INTRO, 'plain')
-        part2 = MIMEText(email_Str, 'html')
+            part1 = MIMEText(DISTRICT_INTRO, 'plain')
+            part2 = MIMEText(email_Str, 'html')
 
-        msg.attach(part1)
-        msg.attach(part2)
-        try:
-            smtpserver = smtplib.SMTP("smtp.gmail.com")
-            smtpserver.set_debuglevel(True)
-            smtpserver.ehlo()
-            smtpserver.starttls()
-            smtpserver.ehlo()
-            smtpserver.login(CONFIG["email_sender"], CONFIG["email_pass"])
-            smtpserver.sendmail(CONFIG["email_sender"], ', '.join(email_recipients), msg.as_string())
-            smtpserver.quit()
-        except smtplib.SMTPAuthenticationError as e:
-            print "Unable to send message: %s" % e
+            msg.attach(part1)
+            msg.attach(part2)
+            try:
+                smtpserver = smtplib.SMTP("smtp.gmail.com")
+                smtpserver.set_debuglevel(True)
+                smtpserver.ehlo()
+                smtpserver.starttls()
+                smtpserver.ehlo()
+                smtpserver.login(CONFIG["email_sender"], CONFIG["email_pass"])
+                smtpserver.sendmail(CONFIG["email_sender"], ', '.join(email_recipients), msg.as_string())
+                smtpserver.quit()
+            except smtplib.SMTPAuthenticationError as e:
+                print "Unable to send message: %s" % e
 
         # now build the SMS
         messages = [DISTRICT_FIRST_MSG]
