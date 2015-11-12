@@ -14,6 +14,7 @@ from email.mime.text import MIMEText
 TEST_MODE = False
 TEST_DISTRICT = 'Amudat'
 INTRO_MODE = False
+SENDSMS = True
 
 cmd = sys.argv[1:]
 opts, args = getopt.getopt(
@@ -27,6 +28,8 @@ for option, parameter in opts:
         INTRO_MODE = True
     if option in ('-d', '--district'):
         TEST_DISTRICT = parameter
+    if option in ('-n', '--nosms'):
+        SENDSMS = False
 
 import logging
 logging.basicConfig()
@@ -237,9 +240,9 @@ if __name__ == '__main__':
                     'fuuid': r["name"],  # just to track the facility/district
                 }
                 sched_time = current_time + timedelta(minutes=SMS_OFFSET_TIME)
-                # queue_facility_sms(conn, cur, params, sched_time)
+                if SENDSMS:
+                    queue_facility_sms(conn, cur, params, sched_time)
                 current_time = sched_time
-                print m
 
     conn2.close()
     conn.close()
