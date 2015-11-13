@@ -185,7 +185,7 @@ if __name__ == '__main__':
             msg.attach(part1)
             msg.attach(part2)
             try:
-                smtpserver = smtplib.SMTP("smtp.gmail.com")
+                smtpserver = smtplib.SMTP("smtp.gmail.com", 587)
                 smtpserver.set_debuglevel(True)
                 smtpserver.ehlo()
                 smtpserver.starttls()
