@@ -95,7 +95,24 @@ def float_values(m):
     return m
 
 if __name__ == '__main__':
-    email_Str = """
+    conn2 = psycopg2.connect(
+        "dbname=" + CONFIG["mtrack_dbname"] + " host= " + CONFIG["dbhost"] + " port=" + CONFIG["dbport"] +
+        " user=" + CONFIG["dbuser"] + " password=" + CONFIG["dbpasswd"])
+    cur2 = conn2.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    conn = psycopg2.connect(
+        "dbname=" + CONFIG["dbname"] + " host= " + CONFIG["dbhost"] + " port=" + CONFIG["dbport"] +
+        " user=" + CONFIG["dbuser"] + " password=" + CONFIG["dbpasswd"])
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    if TEST_MODE:
+        cur.execute(
+            "SELECT id, name FROM districts WHERE is_treatment ='t' and name = %s", [TEST_DISTRICT])
+    else:
+        cur.execute("SELECT id, name FROM districts WHERE is_treatment ='t'")
+    res = cur.fetchall()
+
+    for r in res:
+        email_Str = """
 <table>
     <thead>
         <tr><th colspan="13" align="center">%(district)s Monthly Report: Perfomance of Individual Facilities</th></tr>
@@ -120,23 +137,7 @@ if __name__ == '__main__':
     </tbody>
 </table>
 """
-    conn2 = psycopg2.connect(
-        "dbname=" + CONFIG["mtrack_dbname"] + " host= " + CONFIG["dbhost"] + " port=" + CONFIG["dbport"] +
-        " user=" + CONFIG["dbuser"] + " password=" + CONFIG["dbpasswd"])
-    cur2 = conn2.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    conn = psycopg2.connect(
-        "dbname=" + CONFIG["dbname"] + " host= " + CONFIG["dbhost"] + " port=" + CONFIG["dbport"] +
-        " user=" + CONFIG["dbuser"] + " password=" + CONFIG["dbpasswd"])
-    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    if TEST_MODE:
-        cur.execute(
-            "SELECT id, name FROM districts WHERE is_treatment ='t' and name = %s", [TEST_DISTRICT])
-    else:
-        cur.execute("SELECT id, name FROM districts WHERE is_treatment ='t'")
-    res = cur.fetchall()
-
-    for r in res:
         cur.execute(
             "SELECT rank, facility, flevel, curr_anc1, curr_anc4, curr_delivery, curr_pcv, curr_rr, total_score, "
             "comp_anc1, comp_anc4, comp_delivery, comp_pcv"
